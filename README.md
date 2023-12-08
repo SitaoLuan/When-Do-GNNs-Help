@@ -1,5 +1,5 @@
 # When Do Graph Neural Networks Help with Node Classification?
-Official repository for "When Do Graph Neural Networks Help with Node Classification? Investigating the Impact of Homophily Principle on Node Distinguishability" (Sitao Luan *et al.*, NeurIPS 2023) [paper](https://arxiv.org/abs/2304.14274)
+Official repository for ["When Do Graph Neural Networks Help with Node Classification? Investigating the Impact of Homophily Principle on Node Distinguishability"](https://arxiv.org/abs/2304.14274) (Sitao Luan *et al.*, NeurIPS 2023) 
 
 
 Example of Node Distinguishability             | Classifier-based Performance Metrics and Baseline GNNs' Behavior on Synthetic Graphs
@@ -44,7 +44,7 @@ pip install -r requirements.txt
 ## Ablation Study on CSBM-H
 
 ### Play with CSBM-H
-
+Run 'csbm-h.py', change parameters to do ablation study
 ```
 # Change the prior distributions with different n0, n1 settings
 n0 = 100
@@ -59,7 +59,7 @@ sigma1 = 5
 d0 = 5 
 d1 = 5 
 ```
-The results are saved into the `csbmh_plots` folder and the generated data will be saved at `csbmh_plots/data`.
+The figures are saved into the `csbmh_plots` folder and the generated data will be saved at `csbmh_plots/data`.
 
 ## Performance Metrics on Real-world Datasets
 
@@ -72,7 +72,7 @@ python train.py --homophily_test.py
 ```
 
 ## Tests on Synthetic Graphs
-We use the data generation method from [ACM-GNNs](https://github.com/SitaoLuan/ACM-GNN), you can customize the synthetic graphs. We provide a set of generated graphs in 'data_synthesis'.
+We use the data generation method from [ACM-GNN](https://github.com/SitaoLuan/ACM-GNN), you can customize the synthetic graphs. We provide a set of generated graphs in 'data_synthesis'.
 
 Generated features are saved into the `data_synthesis/features/` folder.
 
@@ -90,7 +90,7 @@ python synthetic_plot.py
 
 ## Attribution
 Parts of the code are based on
-- [ACM-GNNs](https://github.com/SitaoLuan/ACM-GNN)
+- [ACM-GNN](https://github.com/SitaoLuan/ACM-GNN)
 
 ## Reference
 If you make advantage of this repository in your research, please cite the following in your manuscript:
