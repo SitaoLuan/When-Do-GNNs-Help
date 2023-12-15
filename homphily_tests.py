@@ -86,10 +86,8 @@ for dataset_name in all_datasets:
         else:
             idx_train = None
 
-        soft_las[i] = 2 * similarity(label_onehot, adj, label_onehot, NTK=None, hard=None, LP=1,
-                                     idx_train=idx_train) - 1
-        hard_las[i] = 2 * similarity(label_onehot, adj, label_onehot, NTK=None, hard=1, LP=1,
-                                     idx_train=idx_train) - 1
+        soft_las[i] = 2 * similarity(label_onehot, adj, label_onehot, hard=None, LP=1, idx_train=idx_train) - 1
+        hard_las[i] = 2 * similarity(label_onehot, adj, label_onehot, hard=1, LP=1, idx_train=idx_train) - 1
 
     kernel_reg0 = classifier_based_performance_metric(features, adj, labels, args.sample_max,
                                                       base_classifier='kernel_reg0', epochs=100)

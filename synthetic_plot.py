@@ -12,7 +12,7 @@ from gnns_on_syn import mlp2_mean, mlp2_std
 from gnns_on_syn import sgc_mean, sgc_std
 from homophily import classifier_based_performance_metric, edge_homophily, node_homophily, our_measure, similarity, \
     adjusted_homo, label_informativeness, generalized_edge_homophily
-from utils import full_load_data, normalize, preprocess_features
+from utils import normalize, full_load_data, preprocess_features
 
 adj_low, adj_high, features, labels = full_load_data('citeseer')
 
