@@ -1,3 +1,4 @@
+import argparse
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -416,23 +417,45 @@ def csbm_h_2(n0, n1, mu0, mu1, sigma0, sigma1, d0, d1, return_results=False):
     plt.close()
 
 
-# 2D plots of CSBM-H
-n0 = 100
-n1 = 100
-mu0 = np.array([-1, 0])
-mu1 = np.array([1, 0])
-sigma0 = 1
-sigma1 = 5
-d0 = 5
-d1 = 5
+def len_eq_2(input):
+    if len(input) == 2 and all([type(el) is int for el in input]):
+        return input
+    raise argparse.ArgumentTypeError("Parameter must be 2 integers")
 
-n0_range = np.linspace(100, 500, 1)
-n1_range = np.linspace(100, 1000, 10)
-mu0x_range = np.linspace(1, 5, 5)
-mu1x_range = np.linspace(1, 5, 5)
-sigma0_range = np.linspace(1, 21, 5)
-sigma1_range = np.linspace(1, 5, 1)
-d0_range = np.linspace(5, 55, 6)
-d1_range = np.linspace(5, 15, 1)
 
-csbm_h_2(int(n0), int(n1), mu0, mu1, sigma0, sigma1, d0, d1)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument("--prior_distribution_params",
+                        default=[100, 100], nargs='+', type=len_eq_2,
+                        help="Parameters (n0, n1) to set prior distributions")
+    parser.add_argument("--node_center_0",
+                        default=[-1, 0], nargs="+", type=len_eq_2,
+                        help="Node centers mu0 for ablation on inter-class node distinguishability")
+    parser.add_argument("--node_center_1",
+                        default=[1, 0], nargs="+", type=len_eq_2,
+                        help="Node centers mu1 for ablation on inter-class node distinguishability")
+    parser.add_argument("--sigmas",
+                        default=[1, 5], nargs="+", type=len_eq_2,
+                        help="Sigma0 and sigma1 for ablation on inter-class node distinguishability")
+    parser.add_argument("--node_degrees",
+                        default=[5, 5], nargs="+", type=len_eq_2,
+                        help="Node degree d0 and d1 for ablation on inter-class node distinguishability")
+    args = parser.parse_args()
+
+    # 2D plots of CSBM-H
+    n0, n1 = args.prior_distribution_params
+    mu0 = np.array(args.node_center_0)
+    mu1 = np.array(args.node_center_1)
+    sigma0, sigma1 = args.sigmas
+    d0, d1 = args.node_degrees
+
+    n0_range = np.linspace(100, 500, 1)
+    n1_range = np.linspace(100, 1000, 10)
+    mu0x_range = np.linspace(1, 5, 5)
+    mu1x_range = np.linspace(1, 5, 5)
+    sigma0_range = np.linspace(1, 21, 5)
+    sigma1_range = np.linspace(1, 5, 1)
+    d0_range = np.linspace(5, 55, 6)
+    d1_range = np.linspace(5, 15, 1)
+
+    csbm_h_2(int(n0), int(n1), mu0, mu1, sigma0, sigma1, d0, d1)
