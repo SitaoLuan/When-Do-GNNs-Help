@@ -18,7 +18,6 @@ if torch.cuda.is_available():
     device = 'cuda:0'
 else:
     device = 'cpu'
-device = torch.device(device)
 
 
 def remove_self_loops(edge_index, edge_attr=None):
@@ -32,7 +31,7 @@ def remove_self_loops(edge_index, edge_attr=None):
 
     :rtype: (:class:`LongTensor`, :class:`Tensor`)
     """
-    row, col = edge_index
+    row, col = edge_index[0], edge_index[1]
     mask = row != col
     edge_attr = edge_attr if edge_attr is None else edge_attr[mask]
     edge_index = edge_index[:, mask]
@@ -104,7 +103,7 @@ def node_homophily_edge_idx(edge_idx, labels, num_nodes):
     return hs[degs != 0].mean()
 
 
-def compat_matrix_edge_idx(edge_idx, labels):
+def compact_matrix_edge_idx(edge_idx, labels):
     """
      c x c compatibility matrix, where c is number of classes
      H[i,j] is proportion of endpoints that are class j 
@@ -117,7 +116,7 @@ def compat_matrix_edge_idx(edge_idx, labels):
     labeled_nodes = (labels[src_node] >= 0) * (labels[targ_node] >= 0)
     label = labels.squeeze()
     c = label.max() + 1
-    H = torch.zeros((c, c)).to(edge_index.device)
+    H = torch.zeros((c, c)).to(edge_index.to(device))
     src_label = label[src_node[labeled_nodes]]
     targ_label = label[targ_node[labeled_nodes]]
     for k in range(c):
@@ -135,7 +134,7 @@ def our_measure(edge_index, label):
     """
     label = label.squeeze()
     c = label.max() + 1
-    H = compat_matrix_edge_idx(edge_index, label)
+    H = compact_matrix_edge_idx(edge_index, label)
     nonzero_label = label[label >= 0]
     counts = nonzero_label.unique(return_counts=True)[1]
     proportions = counts.float() / nonzero_label.shape[0]
@@ -190,7 +189,7 @@ def label_informativeness(A, label):
 def generalized_edge_homophily(adj, features, label, sample_max=75000, iteration=10):
     nedges = adj.coalesce().indices()[0, :].shape[0]
     if nedges < sample_max:
-        sim = torch.tensor(cosine_similarity(features.cpu(), features.cpu()))  # .to(device)
+        sim = torch.tensor(cosine_similarity(features.cpu(), features.cpu())).to(device)
         sim[torch.isnan(sim)] = 0
         adj = adj.to_dense()
         adj = adj - torch.diag(torch.diag(adj))
@@ -241,7 +240,7 @@ def similarity(features, adj, label, hard=None, LP=1, ifsum=1, idx_train=None):
             # weight mean
             LAF_ratio = (weight_matrix[np.arange(labels.size(0)), labels] / degs_label) / \
                         ((torch.sum(weight_matrix, 1) - weight_matrix[np.arange(labels.size(0)), labels]) / (
-                                    nnodes - degs_label))
+                                nnodes - degs_label))
             LAF_ratio[torch.isnan(LAF_ratio)] = 0
             return torch.mean((LAF_ratio >= 1).float())  #
         else:
