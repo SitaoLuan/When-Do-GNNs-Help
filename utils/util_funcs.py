@@ -12,7 +12,7 @@ import torch as th
 from google_drive_downloader import GoogleDriveDownloader as gdd
 from sklearn.preprocessing import normalize as sk_normalize
 
-from datasets import load_fb100_dataset, load_wiki, load_genius, load_deezer_dataset, load_yelpchi_dataset, \
+from utils.datasets import load_fb100_dataset, load_wiki, load_genius, load_deezer_dataset, load_yelpchi_dataset, \
     load_arxiv_year_dataset, load_twitch_gamer_dataset, load_pokec_mat, load_snap_patents_mat, read_WGCN_crocodile, \
     read_SuperGAT_crocodile
 
@@ -20,7 +20,6 @@ if torch.cuda.is_available():
     from torch_geometric.utils import to_dense_adj, contains_self_loops, remove_self_loops, \
         to_dense_adj, to_undirected
 
-DATAPATH = path.dirname(path.abspath(__file__)) + '/data/'
 SPLITS_DRIVE_URL = {
     'snap-patents': '12xbBRqd8mtG_XkNLH8dRRNZJvVM4Pw-N',
     'pokec': '1ZhpAiyTNc0cE_hhgyiqxnkKREHK7MK-_',
@@ -137,7 +136,6 @@ def full_load_data(dataset_name):
         adj, features, labels = load_data(dataset_name)
         labels = np.argmax(labels, axis=-1)
         features = features.todense()
-        G = nx.DiGraph(adj).to_undirected()
     elif dataset_name in {'CitationFull_dblp', 'Coauthor_CS', 'Coauthor_Physics', 'Amazon_Computers', 'Amazon_Photo'}:
         dataset, name = dataset_name.split("_")
         adj, features, labels = load_torch_geometric_data(dataset, name)
@@ -146,8 +144,10 @@ def full_load_data(dataset_name):
         adj, features, labels = load_torch_geometric_data(dataset_name, None)
 
     else:
-        graph_adjacency_list_file_path = os.path.join('new_data', dataset_name, 'out1_graph_edges.txt')
-        graph_node_features_and_labels_file_path = os.path.join('new_data', dataset_name,
+        graph_adjacency_list_file_path = os.path.join(path.dirname(path.abspath(__file__)), '../new_data', dataset_name,
+                                                      'out1_graph_edges.txt')
+        graph_node_features_and_labels_file_path = os.path.join(path.dirname(path.abspath(__file__)), '../new_data',
+                                                                dataset_name,
                                                                 'out1_node_feature_label.txt')
 
         G = nx.DiGraph().to_undirected()
@@ -291,8 +291,10 @@ def full_load_data_large(dataset_name, sage_data=False):
         adj = sp.coo_matrix((np.ones(row.shape[0]), (row, col)), shape=(N, N))
         features, labels = dataset.graph['node_feat'], dataset.label
     else:
-        graph_adjacency_list_file_path = os.path.join('new_data', dataset_name, 'out1_graph_edges.txt')
-        graph_node_features_and_labels_file_path = os.path.join('new_data', dataset_name,
+        graph_adjacency_list_file_path = os.path.join(path.dirname(path.abspath(__file__)), '../new_data', dataset_name,
+                                                      'out1_graph_edges.txt')
+        graph_node_features_and_labels_file_path = os.path.join(path.dirname(path.abspath(__file__)), '../new_data',
+                                                                dataset_name,
                                                                 'out1_node_feature_label.txt')
 
         G = nx.DiGraph().to_undirected()
@@ -361,8 +363,8 @@ def full_load_data_large(dataset_name, sage_data=False):
     else:
         print('From Matrix to Tensor...')
         adj = sparse_mx_to_torch_sparse_tensor(adj)  # .to(device)
-        print('Done Marrix to Tensor...')
-    print('Done Proccessing...')
+        print('Done Matrix to Tensor...')
+    print('Done Processing...')
 
     return adj, features, labels
 

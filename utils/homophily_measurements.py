@@ -11,7 +11,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.naive_bayes import GaussianNB
 from torch_scatter import scatter_add
 
-from utils import random_disassortative_splits, accuracy
+from utils.util_funcs import random_disassortative_splits, accuracy
 
 pi = math.pi
 if torch.cuda.is_available():

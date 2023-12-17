@@ -10,7 +10,7 @@ from sklearn import svm
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.naive_bayes import GaussianNB
 
-from utils import random_disassortative_splits
+from utils.util_funcs import random_disassortative_splits
 
 if torch.cuda.is_available():
     device = 'cuda:0'
@@ -115,7 +115,6 @@ def compact_matrix_edge_idx(edge_index, labels):
     H = torch.zeros((c, c)).to(device)
     src_label = label[src_node[labeled_nodes]]
     targ_label = label[targ_node[labeled_nodes]]
-    label_idx = torch.cat((src_label.unsqueeze(0), targ_label.unsqueeze(0)), axis=0)
     for k in range(c):
         sum_idx = torch.where(src_label == k)[0]
         add_idx = targ_label[sum_idx]

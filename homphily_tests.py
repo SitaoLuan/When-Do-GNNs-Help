@@ -6,9 +6,9 @@ import torch
 import torch.nn.functional as f
 from torch_geometric.utils.convert import to_scipy_sparse_matrix
 
-from homophily2 import random_disassortative_splits, classifier_based_performance_metric, similarity, adjusted_homo, \
+from utils.homophily_measurements import random_disassortative_splits, classifier_based_performance_metric, similarity, adjusted_homo, \
     label_informativeness, node_homophily, our_measure, edge_homophily, generalized_edge_homophily
-from utils import row_normalized_adjacency, sys_normalized_adjacency, full_load_data_large, normalize_tensor, \
+from utils.util_funcs import row_normalized_adjacency, sys_normalized_adjacency, full_load_data_large, normalize_tensor, \
     sparse_mx_to_torch_sparse_tensor
 
 parser = argparse.ArgumentParser()

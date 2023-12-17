@@ -15,7 +15,7 @@ def chi2comb_error(n0, n1, mu0, mu1, sigma0, sigma1):
     # generalized chi-square version 2 (put weight to noncentral chi-square)
     gcoef0 = 0  # Coefficient of the standard Normal distribution.
     ncents0 = [(mu0 / np.sqrt(sigma0) + (b) / (2 * a * np.sqrt(sigma0))) @ np.transpose(mu0 / np.sqrt(sigma0) + (b) / (
-                2 * a * np.sqrt(sigma0)))]  # noncentrality parameters lambda of the non-centric chi-square variables
+            2 * a * np.sqrt(sigma0)))]  # noncentrality parameters lambda of the non-centric chi-square variables
     q0 = -c + (b @ np.transpose(b)) / (4 * a)  # quantity for cdf
     dofs0 = [df]  # degree of freedom of the non-centric chi-square variables
     coefs0 = [a * sigma0]  # coefficients of the non-centric chi-square variables
@@ -75,7 +75,7 @@ def Negative_Wasserstein(n0, n1, mu0, mu1, sigma0, sigma1, d0, d1, h):
     muh1_high = (1 - h) * (mu1 - mu0)
     sigmah1_high = (1 + h / d1) * sigma1 + (1 - h) / d1 * sigma0
     h_high_nswd = -np.linalg.norm(muh0_high - muh1_high, 2) ** 2 - dim * (
-                np.sqrt(sigmah0_high) - np.sqrt(sigmah1_high)) ** 2
+            np.sqrt(sigmah0_high) - np.sqrt(sigmah1_high)) ** 2
 
     return x_nswd, h_nswd, h_high_nswd
 
@@ -98,7 +98,7 @@ def Negative_Hellinger(n0, n1, mu0, mu1, sigma0, sigma1, d0, d1, h):
     muh1_high = (1 - h) * (mu1 - mu0)
     sigmah1_high = (1 + h / d1) * sigma1 + (1 - h) / d1 * sigma0
     h_high_nshd = -1 + ((np.sqrt(sigmah0_high) * np.sqrt(sigmah1_high)) / ((sigmah0_high + sigmah1_high) / 2)) ** (
-                dim / 2) * np.exp(
+            dim / 2) * np.exp(
         -1 / 8 * np.linalg.norm(muh0_high - muh1_high, 2) ** 2 / ((sigmah0_high + sigmah1_high) / 2))
 
     return x_nshd, h_nshd, h_high_nshd
@@ -128,13 +128,13 @@ def NGJ_div(n0, n1, mu0, mu1, sigma0, sigma1, d0, d1, h):
     rho_high = np.sqrt(sigmah0_high / sigmah1_high)
     dE2_high = (muh0_high - muh1_high).T @ (muh0_high - muh1_high)
     NGJD_high = dE2_high / 2 * (p0 / sigmah1_high + p1 / sigmah0_high) + dim / 2 * (
-                p0 * rho_high ** 2 + p1 / (rho_high ** 2) - 1)
+            p0 * rho_high ** 2 + p1 / (rho_high ** 2) - 1)
     dist_high = dE2_high / 2 * (p0 / sigmah1_high + p1 / sigmah0_high)
 
     return -NGJD_x, -NGJD_h, -NGJD_high, - dist_x, -dist_h, -dist_high
 
 
-def visualize_csbmh(cluster0, cluster1, title, file, filename, with_legend=True):
+def visualize_csbmh(cluster0, cluster1, title, file, filename):
     plt.plot(cluster0[0], cluster0[1], 'x')
     plt.plot(cluster1[0], cluster1[1], 'x')
 
@@ -226,8 +226,6 @@ def csbm_h_2(n0, n1, mu0, mu1, sigma0, sigma1, d0, d1, return_results=False):
         return np.mean(pbe_x_results, 1), np.mean(pbe_h_results, 1), np.mean(pbe_h_high_results, 1), np.mean(
             NGJD_x_results, 1), np.mean(NGJD_h_results, 1), np.mean(NGJD_h_high_results, 1)
 
-    with_legend = False
-
     # Plot Probabilistic Bayes Error Rate
     plt.plot(homo_range, np.mean(pbe_x_results, 1), color='black')
     plt.fill_between(homo_range, np.mean(pbe_x_results, 1) + np.std(pbe_x_results, 1),
@@ -244,7 +242,11 @@ def csbm_h_2(n0, n1, mu0, mu1, sigma0, sigma1, d0, d1, return_results=False):
     plt.xlim(0, 1)
     plt.ylim(0, 0.55)
     plt.xlabel('Homophily h')
-    Path(f"./csbmh_plots/data").mkdir(parents=True, exist_ok=True)
+
+    sub_dir_names = ("x_data", "h_data", "h_high_data")
+    for sub_dir_name in sub_dir_names:
+        Path(f"./csbmh_plots/data/{sub_dir_name}").mkdir(parents=True, exist_ok=True)
+
     np.save(
         f"./csbmh_plots/data/x_data/Probabilistic_Error,n0={n0},n1={n1},mu0x={mu0[0]},mu1x={mu1[0]},sigma0={sigma0},sigma1={sigma1},d0={d0},d1={d1}",
         pbe_x_results)
@@ -274,7 +276,6 @@ def csbm_h_2(n0, n1, mu0, mu1, sigma0, sigma1, d0, d1, return_results=False):
     plt.legend(["X", 'H', 'H_high'], bbox_to_anchor=(1, 1))
     plt.title('Expected Negative Normalized Euclidean Distance')
     plt.xlim(0, 1)
-    # plt.ylim(0,0.5)
     plt.xlabel('Homophily h')
     Path(f"./csbmh_plots/data").mkdir(parents=True, exist_ok=True)
     np.save(

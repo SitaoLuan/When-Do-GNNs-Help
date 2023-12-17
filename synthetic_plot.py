@@ -10,9 +10,9 @@ from gnns_on_syn import gcn_mean, gcn_std
 from gnns_on_syn import mlp1_mean, mlp1_std
 from gnns_on_syn import mlp2_mean, mlp2_std
 from gnns_on_syn import sgc_mean, sgc_std
-from homophily_ import classifier_based_performance_metric, edge_homophily, node_homophily, our_measure, similarity, \
+from utils.homophily_plot import classifier_based_performance_metric, edge_homophily, node_homophily, our_measure, similarity, \
     adjusted_homo, label_informativeness, generalized_edge_homophily
-from utils import normalize, full_load_data, preprocess_features
+from utils.util_funcs import normalize, full_load_data, preprocess_features
 
 adj_low, adj_high, features, labels = full_load_data('citeseer')
 
