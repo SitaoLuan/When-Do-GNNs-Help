@@ -18,6 +18,7 @@ if torch.cuda.is_available():
     device = 'cuda:0'
 else:
     device = 'cpu'
+device = torch.device(device)
 
 
 def remove_self_loops(edge_index, edge_attr=None):
@@ -56,23 +57,6 @@ def edge_homophily(A, labels, ignore_negative=False):
     return edge_hom
 
 
-def compat_matrix(A, labels):
-    """ c x c compatibility matrix, where c is number of classes
-     H[i,j] is proportion of endpoints that are class j 
-     of edges incident to class i nodes 
-     See Zhu et al. 2020
-    """
-    c = len(np.unique(labels))
-    H = np.zeros((c, c))
-    src_node, targ_node = A.coalesce().indices()[0, :], A.coalesce().indices()[1, :]  # A.nonzero()
-    for i in range(len(src_node)):
-        src_label = labels[src_node[i]]
-        targ_label = labels[targ_node[i]]
-        H[src_label, targ_label] += 1
-    H = H / np.sum(H, axis=1, keepdims=True)
-    return H
-
-
 def node_homophily(A, labels):
     """ average of homophily for each node
     """
@@ -82,15 +66,6 @@ def node_homophily(A, labels):
     labels = torch.tensor(labels)
     num_nodes = A.shape[0]
     return node_homophily_edge_idx(edge_idx, labels, num_nodes)
-
-
-def edge_homophily_edge_idx(edge_idx, labels):
-    """ edge_idx is 2x(number edges) """
-    edge_index = remove_self_loops(edge_idx)[0]
-    src_label = labels[edge_index[0, :]]
-    targ_label = labels[edge_index[1, :]]
-    labeled_edges = (src_label >= 0) * (targ_label >= 0)
-    return torch.mean((src_label[labeled_edges] == targ_label[labeled_edges]).float())
 
 
 def node_homophily_edge_idx(edge_idx, labels, num_nodes):

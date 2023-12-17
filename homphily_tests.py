@@ -8,7 +8,7 @@ from torch_geometric.utils.convert import to_scipy_sparse_matrix
 
 from homophily2 import random_disassortative_splits, classifier_based_performance_metric, similarity, adjusted_homo, \
     label_informativeness, node_homophily, our_measure, edge_homophily, generalized_edge_homophily
-from utils_large import row_normalized_adjacency, sys_normalized_adjacency, full_load_data_large, normalize_tensor, \
+from utils import row_normalized_adjacency, sys_normalized_adjacency, full_load_data_large, normalize_tensor, \
     sparse_mx_to_torch_sparse_tensor
 
 parser = argparse.ArgumentParser()
@@ -99,6 +99,6 @@ for dataset_name in all_datasets:
     print(dataset_name, ' Node Homo: ', node_homophily(adj.to(device), labels.to(device)), 'Edge Homo',
           edge_homophily(adj, torch.eye(labels.max() + 1)[labels]), "Class Homo: ", our_measure(adj, labels),
           "Generalized Edge Homo: ", generalized_edge_homophily(adj, features, labels),
-          'Aggregation Homo (sofs las): ', np.mean(soft_las), 'Aggregation Homo (hard las): ', 'Adjusted Homo: ',
+          'Aggregation Homo (soft las): ', np.mean(soft_las), 'Aggregation Homo (hard las): ', 'Adjusted Homo: ',
           adj_homo, 'Label Informativeness: ', LI, np.mean(hard_las), "kernel_reg0-based Homo: ", kernel_reg0,
           "kernel_reg1-based Homo: ", kernel_reg1, "gnb-based Homo: ", gnb)

@@ -1,3 +1,4 @@
+import math
 import random
 import time
 
@@ -16,7 +17,6 @@ if torch.cuda.is_available():
 else:
     device = 'cpu'
 device = torch.device(device)
-import math
 
 pi = math.pi
 
@@ -78,23 +78,6 @@ def generalized_edge_homophily(adj, features, label, sample_max=20000, iteration
         return np.mean(edge_homo)
 
 
-def compat_matrix(A, labels):
-    """ c x c compatibility matrix, where c is number of classes
-     H[i,j] is proportion of endpoints that are class j 
-     of edges incident to class i nodes 
-     See Zhu et al. 2020
-    """
-    c = len(np.unique(labels))
-    H = np.zeros((c, c))
-    src_node, targ_node = A.nonzero()
-    for i in range(len(src_node)):
-        src_label = labels[src_node[i]]
-        targ_label = labels[targ_node[i]]
-        H[src_label, targ_label] += 1
-    H = H / np.sum(H, axis=1, keepdims=True)
-    return H
-
-
 def node_homophily(A, labels):
     """ average of homophily for each node
     """
@@ -104,12 +87,6 @@ def node_homophily(A, labels):
     labels = labels.clone().detach()
     num_nodes = A.shape[0]
     return node_homophily_edge_idx(edge_idx, labels, num_nodes)
-
-
-def edge_homophily_edge_idx(edge_idx, labels):
-    """ edge_idx is 2x(number edges) """
-    # edge_index = remove_self_loops(edge_idx)[0]
-    return torch.mean((labels[edge_index[0, :]] == labels[edge_index[1, :]]).float())
 
 
 def node_homophily_edge_idx(edge_index, labels, num_nodes):
@@ -122,7 +99,7 @@ def node_homophily_edge_idx(edge_index, labels, num_nodes):
     return hs[degs != 0].mean()
 
 
-def compat_matrix_edge_idx(edge_index, labels):
+def compact_matrix_edge_idx(edge_index, labels):
     """
      c x c compatibility matrix, where c is number of classes
      H[i,j] is proportion of endpoints that are class j 
@@ -135,7 +112,7 @@ def compat_matrix_edge_idx(edge_index, labels):
     labeled_nodes = (labels[src_node] >= 0) * (labels[targ_node] >= 0)
     label = labels.squeeze()
     c = label.max() + 1
-    H = torch.zeros((c, c)).to(edge_index.device)
+    H = torch.zeros((c, c)).to(device)
     src_label = label[src_node[labeled_nodes]]
     targ_label = label[targ_node[labeled_nodes]]
     label_idx = torch.cat((src_label.unsqueeze(0), targ_label.unsqueeze(0)), axis=0)
@@ -157,7 +134,7 @@ def our_measure(A, label):
     edge_index = A.nonzero()
     label = label.squeeze()
     c = label.max() + 1
-    H = compat_matrix_edge_idx(edge_index, label)
+    H = compact_matrix_edge_idx(edge_index, label)
     nonzero_label = label[label >= 0]
     counts = nonzero_label.unique(return_counts=True)[1]
     proportions = counts.float() / nonzero_label.shape[0]
@@ -210,13 +187,13 @@ def label_informativeness(A, label):
 
 
 def similarity(features, adj, label, NTK=None, hard=None, LP=1, ifsum=1, idx_train=None):
-    if NTK == None:
-        inner_prod = torch.mm(torch.mm(adj, features), torch.mm(adj, features).transpose(0, 1))
-    else:
+    if NTK:
         inner_prod = torch.clamp(torch.mm(features, features.transpose(0, 1)), 0, 1)
 
         inner_prod = (inner_prod * (torch.pi - torch.acos(inner_prod))) / (2 * torch.pi)
         inner_prod = torch.mm(torch.mm(adj, inner_prod), adj.transpose(0, 1))
+    else:
+        inner_prod = torch.mm(torch.mm(adj, features), torch.mm(adj, features).transpose(0, 1))
 
     if str(type(idx_train)) == '<class \'NoneType\'>':
         labels = torch.argmax(label, 1)
@@ -243,22 +220,22 @@ def similarity(features, adj, label, NTK=None, hard=None, LP=1, ifsum=1, idx_tra
         if LP == 1:
 
             LAF_ratio = (weight_matrix[np.arange(labels.size(0)), labels] / degs_label) / (
-                        (torch.sum(weight_matrix, 1) - weight_matrix[np.arange(labels.size(0)), labels]) / (
-                            nnodes - degs_label))
+                    (torch.sum(weight_matrix, 1) - weight_matrix[np.arange(labels.size(0)), labels]) / (
+                    nnodes - degs_label))
             LAF_ratio[torch.isnan(LAF_ratio)] = 0
             return torch.mean((LAF_ratio >= 1).float())
         else:
             return torch.mean(((torch.sum(weight_matrix - weight_matrix * label, 1) <= 0) & (
-                        torch.sum(weight_matrix * label, 1) >= 0)).float())
+                    torch.sum(weight_matrix * label, 1) >= 0)).float())
     else:
         if LP == 1:
             return torch.mean(torch.argmax(weight_matrix, 1).eq(labels).float())
         else:
             return torch.mean(((torch.max(weight_matrix - weight_matrix * label, 1)[0] <= 0.) & (
-                        torch.sum(weight_matrix * label, 1) >= 0)).float())
+                    torch.sum(weight_matrix * label, 1) >= 0)).float())
 
 
-def gntk_homophily_(features, adj, label, sample, n_layers, kernel_regression=False):
+def gntk_homophily_(features, adj, sample, n_layers):
     eps = 1e-8
     nnodes = features.shape[0]
     G_gram = torch.mm(torch.spmm(adj, features)[sample, :], torch.transpose(torch.spmm(adj, features)[sample, :], 0, 1))
@@ -310,14 +287,14 @@ def classifier_based_performance_metric(features, adj, labels, sample_max, rcond
         # Kernel Regression based p-values
         if base_classifier in {'kernel_reg0', 'kernel_reg1'}:
             nlayers = 0 if base_classifier == 'kernel_reg0' else 1
-            K_graph, K = gntk_homophily_(features, adj, labels, sample, n_layers=nlayers)
+            K_graph, K = gntk_homophily_(features, adj, sample, n_layers=nlayers)
             K_graph_train_train, K_train_train = K_graph[idx_train, :][:, idx_train], K[idx_train, :][:, idx_train]
             K_graph_val_train, K_val_train = K_graph[idx_val, :][:, idx_train], K[idx_val, :][:, idx_train]
             Kreg_G, Kreg_X = K_graph_val_train.cpu() @ (
-                        torch.tensor(np.linalg.pinv(K_graph_train_train.cpu().numpy(), rcond=rcond)) @
-                        label_onehot.cpu()[idx_train]), K_val_train.cpu() @ (
-                                         torch.tensor(np.linalg.pinv(K_train_train.cpu().numpy(), rcond=rcond)) @
-                                         label_onehot.cpu()[idx_train])
+                    torch.tensor(np.linalg.pinv(K_graph_train_train.cpu().numpy(), rcond=rcond)) @
+                    label_onehot.cpu()[idx_train]), K_val_train.cpu() @ (
+                                     torch.tensor(np.linalg.pinv(K_train_train.cpu().numpy(), rcond=rcond)) @
+                                     label_onehot.cpu()[idx_train])
 
             diff_results[j] = (torch.mean(Kreg_G.argmax(1).eq(labels_sample[idx_val]).float()) > torch.mean(
                 Kreg_X.argmax(1).eq(labels_sample[idx_val]).float()))

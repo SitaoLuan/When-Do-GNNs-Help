@@ -10,7 +10,7 @@ from gnns_on_syn import gcn_mean, gcn_std
 from gnns_on_syn import mlp1_mean, mlp1_std
 from gnns_on_syn import mlp2_mean, mlp2_std
 from gnns_on_syn import sgc_mean, sgc_std
-from homophily import classifier_based_performance_metric, edge_homophily, node_homophily, our_measure, similarity, \
+from homophily_ import classifier_based_performance_metric, edge_homophily, node_homophily, our_measure, similarity, \
     adjusted_homo, label_informativeness, generalized_edge_homophily
 from utils import normalize, full_load_data, preprocess_features
 
@@ -111,7 +111,8 @@ for k, base_dataset in zip(range(len(dataset_name)), dataset_name):
         print("Computing CPM for %s with edge homo: %.2f, KR_L: %.4f, KR_NL: %.4f" % (
             base_dataset, graph_h_value, np.mean(KR_L), np.mean(KR_NL)))
         print(
-            "Computing CPM for %s with edge homo: %.2f, node homo: %.4f, class homo: %.4f, agg homo: %.4f, GE homo: %.4f, adj homo: %.4f, LI: %.4f" % (
+            "Computing CPM for %s with edge homo: %.2f, node homo: %.4f, "
+            "class homo: %.4f, agg homo: %.4f, GE homo: %.4f, adj homo: %.4f, LI: %.4f" % (
                 base_dataset, graph_h_value, np.mean(node_homo), np.mean(class_homo), np.mean(soft_las), np.mean(ge),
                 np.mean(adj_homo), np.mean(LI)))
 
