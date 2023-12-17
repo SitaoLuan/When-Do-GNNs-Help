@@ -9,7 +9,7 @@ import numpy as np
 import scipy.sparse as sp
 import torch
 import torch as th
-from google_drive_downloader import GoogleDriveDownloader as gdd
+from torch_geometric.utils import to_undirected
 from sklearn.preprocessing import normalize as sk_normalize
 
 from utils.datasets import load_fb100_dataset, load_wiki, load_genius, load_deezer_dataset, load_yelpchi_dataset, \
@@ -18,7 +18,7 @@ from utils.datasets import load_fb100_dataset, load_wiki, load_genius, load_deez
 
 if torch.cuda.is_available():
     from torch_geometric.utils import to_dense_adj, contains_self_loops, remove_self_loops, \
-        to_dense_adj, to_undirected
+        to_dense_adj
 
 device = f'cuda:0' if torch.cuda.is_available() else 'cpu'
 device = torch.device(device)

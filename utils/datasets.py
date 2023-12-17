@@ -197,7 +197,7 @@ def load_snap_patents_mat(nclass=5):
 def load_genius():
     filename = 'genius'
     dataset = NCDataset(filename)
-    fulldata = scipy.io.loadmat(f'../data/genius.mat')
+    fulldata = scipy.io.loadmat(f'{DATA_PATH}genius.mat')
 
     edge_index = torch.tensor(fulldata['edge_index'], dtype=torch.long)
     node_feat = torch.tensor(fulldata['node_feat'], dtype=torch.float)

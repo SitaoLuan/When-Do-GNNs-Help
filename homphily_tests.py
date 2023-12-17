@@ -1,5 +1,6 @@
 import argparse
 import os
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -20,6 +21,9 @@ device = torch.device(device)
 
 ifsum = 1
 num_exp = 10
+
+ACMGCN_FEATURES_PATH = os.path.dirname(os.path.abspath(__file__)) + '/data/acmgcn_features/'
+Path(ACMGCN_FEATURES_PATH).mkdir(parents=True, exist_ok=True)
 
 BASE_CLASSIFIERS = ['kernel_reg0', 'kernel_reg1', 'gnb']
 SMALL_DATASETS = ['cornell', 'wisconsin', 'texas', 'film', 'chameleon', 'squirrel', 'cora', 'citeseer', 'pubmed']
@@ -83,13 +87,13 @@ if dataset_name in SMALL_DATASETS:
 else:
     adj_low_unnormalized, features, labels = full_load_data_large(dataset_name)
     nnodes = (labels.shape[0])
-    adj_low_pt = 'acmgcn_features/' + dataset_name + '_adj_low.pt'
-    adj_high_pt = 'acmgcn_features/' + dataset_name + '_adj_high.pt'
+
+    adj_low_pt = ACMGCN_FEATURES_PATH + dataset_name + '_adj_low.pt'
+    adj_high_pt = ACMGCN_FEATURES_PATH + dataset_name + '_adj_high.pt'
 
     features = f.normalize(features, p=1, dim=1)
     if os.path.exists(adj_low_pt) and os.path.exists(adj_high_pt):
         adj = torch.load(adj_low_pt)
-
     else:
         adj = to_scipy_sparse_matrix(adj_low_unnormalized.coalesce().indices())
     if args.symmetric == 1:
