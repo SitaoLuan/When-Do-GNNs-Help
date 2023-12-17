@@ -86,7 +86,7 @@ def compact_matrix_edge_idx(edge_idx, labels):
      "Generalizing GNNs Beyond Homophily"
      treats negative labels as unlabeled
      """
-    edge_index = remove_self_loops(edge_idx)[0]
+    edge_index = remove_self_loops(edge_idx.to(device))[0]
     src_node, targ_node = edge_index[0, :], edge_index[1, :]
     labeled_nodes = (labels[src_node] >= 0) * (labels[targ_node] >= 0)
     label = labels.squeeze()
@@ -109,7 +109,7 @@ def our_measure(edge_index, label):
     """
     label = label.squeeze()
     c = label.max() + 1
-    H = compact_matrix_edge_idx(edge_index, label)
+    H = compact_matrix_edge_idx(edge_index.to(device), label.to(device))
     nonzero_label = label[label >= 0]
     counts = nonzero_label.unique(return_counts=True)[1]
     proportions = counts.float() / nonzero_label.shape[0]

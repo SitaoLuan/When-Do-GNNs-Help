@@ -52,17 +52,19 @@ parser.add_argument('--base_classifier', type=str, default='kernel_reg1', choice
                     help='The classifier used for performance metric(kernel_reg1, kernel_reg0, svm_linear, svm_rbf, svm_poly, gnb)')
 parser.add_argument('--homophily_metric', required=True, choices=list(METRIC_LIST.keys()),
                     help="The metric to measure homophily, please select from the following list: \n"
-                         "{node_homo (node homophily), \n"
-                         " edge_homo (edge homophily), \n"
-                         " class_homo (class homophily), \n"
-                         " node_hom_generalized (generalized node homophily), \n"
-                         " agg_homo_soft (aggreation homophily with soft LAS), \n"
-                         " agg_homo_hard (aggreation homophily with hard LAS), \n"
-                         " adj_homo (adjusted homophily), \n"
-                         " label_info (label informativeness), \n"
-                         " kernel_reg0_based_homo (kernel based homophily with reg0), \n"
-                         " kernel_reg1_based_homo (kernel based homophily with reg1), \n"
-                         " gnb_based_homo (gnd-based homophily)}")
+                         "[ \n"
+                         "  node_homo (node homophily), \n"
+                         "  edge_homo (edge homophily), \n"
+                         "  class_homo (class homophily), \n"
+                         "  node_hom_generalized (generalized node homophily), \n"
+                         "  agg_homo_soft (aggreation homophily with soft LAS), \n"
+                         "  agg_homo_hard (aggreation homophily with hard LAS), \n"
+                         "  adj_homo (adjusted homophily), \n"
+                         "  label_info (label informativeness), \n"
+                         "  kernel_reg0_based_homo (kernel based homophily with reg0), \n"
+                         "  kernel_reg1_based_homo (kernel based homophily with reg1), \n"
+                         "  gnb_based_homo (gnd-based homophily) \n"
+                         "]")
 
 args = parser.parse_args()
 dataset_name = args.dataset_name

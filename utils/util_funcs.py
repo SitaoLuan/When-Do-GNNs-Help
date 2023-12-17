@@ -20,11 +20,6 @@ if torch.cuda.is_available():
     from torch_geometric.utils import to_dense_adj, contains_self_loops, remove_self_loops, \
         to_dense_adj, to_undirected
 
-SPLITS_DRIVE_URL = {
-    'snap-patents': '12xbBRqd8mtG_XkNLH8dRRNZJvVM4Pw-N',
-    'pokec': '1ZhpAiyTNc0cE_hhgyiqxnkKREHK7MK-_',
-}
-
 device = f'cuda:0' if torch.cuda.is_available() else 'cpu'
 device = torch.device(device)
 
@@ -512,23 +507,3 @@ def rand_train_test_idx(label, train_prop=.6, valid_prop=.2, ignore_negative=Tru
 
     return train_idx, valid_idx, test_idx
 
-
-def load_fixed_splits(dataset, sub_dataset):
-    """ loads saved fixed splits for dataset
-    """
-    name = dataset
-    if sub_dataset and sub_dataset != 'None':
-        name += f'-{sub_dataset}'
-
-    if not os.path.exists(f'./data/splits/{name}-splits.npy'):
-        assert dataset in SPLITS_DRIVE_URL.keys()
-        gdd.download_file_from_google_drive(
-            file_id=SPLITS_DRIVE_URL[dataset],
-            dest_path=f'./data/splits/{name}-splits.npy', showsize=True)
-
-    splits_lst = np.load(f'./data/splits/{name}-splits.npy', allow_pickle=True)
-    for i in range(len(splits_lst)):
-        for key in splits_lst[i]:
-            if not torch.is_tensor(splits_lst[i][key]):
-                splits_lst[i][key] = torch.as_tensor(splits_lst[i][key])
-    return splits_lst

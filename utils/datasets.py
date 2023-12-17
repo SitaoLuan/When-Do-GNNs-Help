@@ -149,7 +149,7 @@ def load_pokec_mat():
         gdd.download_file_from_google_drive(
             file_id=DATASET_DRIVE_URL['pokec'], \
             dest_path=f'{DATA_PATH}pokec.mat', showsize=True)
-
+    print(f'{DATA_PATH}pokec.mat')
     fulldata = scipy.io.loadmat(f'{DATA_PATH}pokec.mat')
 
     dataset = NCDataset('pokec')
