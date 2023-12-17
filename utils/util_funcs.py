@@ -361,9 +361,7 @@ def full_load_data_large(dataset_name, sage_data=False):
     if dataset_name in {'Crocodile-5', 'Crocodile-6'}:
         adj = torch.tensor(adj).to(torch.float32).to_sparse()
     else:
-        print('From Matrix to Tensor...')
         adj = sparse_mx_to_torch_sparse_tensor(adj)  # .to(device)
-        print('Done Matrix to Tensor...')
     print('Done Processing...')
 
     return adj, features, labels
