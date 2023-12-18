@@ -449,13 +449,4 @@ if __name__ == "__main__":
     sigma0, sigma1 = args.sigmas
     d0, d1 = args.node_degrees
 
-    n0_range = np.linspace(100, 500, 1)
-    n1_range = np.linspace(100, 1000, 10)
-    mu0x_range = np.linspace(1, 5, 5)
-    mu1x_range = np.linspace(1, 5, 5)
-    sigma0_range = np.linspace(1, 21, 5)
-    sigma1_range = np.linspace(1, 5, 1)
-    d0_range = np.linspace(5, 55, 6)
-    d1_range = np.linspace(5, 15, 1)
-
     csbm_h_2(int(n0), int(n1), mu0, mu1, sigma0, sigma1, d0, d1)
