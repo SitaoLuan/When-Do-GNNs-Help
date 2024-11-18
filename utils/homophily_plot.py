@@ -151,6 +151,7 @@ def class_distribution(A, labels):
     edge_index = A.to_sparse().coalesce().indices()
     src_node, targ_node = edge_index[0, :], edge_index[1, :]
     deg = src_node.unique(return_counts=True)[1]
+    deg = deg.to(device)
 
     # remove self-loop
     deg = deg - 1
@@ -159,8 +160,8 @@ def class_distribution(A, labels):
 
     labels = labels.squeeze()
     p = labels.unique(return_counts=True)[1] / labels.shape[0]
-    p_bar = torch.zeros(labels.max() + 1)
-    pc = torch.zeros((labels.max() + 1, labels.max() + 1))
+    p_bar = torch.zeros(labels.max() + 1, device=labels.device)
+    pc = torch.zeros((labels.max() + 1, labels.max() + 1), device=labels.device)
     for i in range(labels.max() + 1):
         p_bar[i] = torch.sum(deg[torch.where(labels == i)])
 
@@ -235,6 +236,11 @@ def similarity(features, adj, label, NTK=None, hard=None, LP=1, ifsum=1, idx_tra
 
 
 def gntk_homophily_(features, adj, sample, n_layers):
+    if features.device != sample.device:
+        features = features.to(sample.device)
+    if adj.device != sample.device:
+        adj = adj.to(sample.device)
+        
     eps = 1e-8
     nnodes = features.shape[0]
     G_gram = torch.mm(torch.spmm(adj, features)[sample, :], torch.transpose(torch.spmm(adj, features)[sample, :], 0, 1))
@@ -264,6 +270,13 @@ def gntk_homophily_(features, adj, sample, n_layers):
 
 def classifier_based_performance_metric(features, adj, labels, sample_max, rcond=1e-15, base_classifier='kernel_reg1',
                                         epochs=100):
+    if features.device.type != labels.device.type:
+        features = features.to(labels.device) # Ensure features is on the same device as labels
+    
+    if adj.device.type != labels.device.type:
+        adj = adj.to(labels.device) # Ensure adj is on the same device as labels
+
+    
     nnodes = (labels.shape[0])
     if labels.dim() > 1:
         labels = labels.flatten()
@@ -278,11 +291,11 @@ def classifier_based_performance_metric(features, adj, labels, sample_max, rcond
             labels_sample = labels.cpu()
         else:
             sample, _, _ = random_disassortative_splits(labels, labels.max() + 1, sample_max / nnodes)
-            label_onehot = torch.eye(labels.max() + 1)[labels][sample, :].cpu()
-            labels_sample = labels.cpu()[sample]
-
+            label_onehot = torch.eye(labels.max() + 1, device=device)[labels][sample, :].cpu()            
+            labels_sample = labels[sample]
         idx_train, idx_val, idx_test = random_disassortative_splits(labels_sample, labels_sample.max() + 1)
         idx_val = idx_val + idx_test
+
         # Kernel Regression based p-values
         if base_classifier in {'kernel_reg0', 'kernel_reg1'}:
             nlayers = 0 if base_classifier == 'kernel_reg0' else 1
@@ -290,11 +303,13 @@ def classifier_based_performance_metric(features, adj, labels, sample_max, rcond
             K_graph_train_train, K_train_train = K_graph[idx_train, :][:, idx_train], K[idx_train, :][:, idx_train]
             K_graph_val_train, K_val_train = K_graph[idx_val, :][:, idx_train], K[idx_val, :][:, idx_train]
             Kreg_G, Kreg_X = K_graph_val_train.cpu() @ (
-                    torch.tensor(np.linalg.pinv(K_graph_train_train.cpu().numpy(), rcond=rcond)) @
-                    label_onehot.cpu()[idx_train]), K_val_train.cpu() @ (
-                                     torch.tensor(np.linalg.pinv(K_train_train.cpu().numpy(), rcond=rcond)) @
-                                     label_onehot.cpu()[idx_train])
+                    torch.tensor(np.linalg.pinv(K_graph_train_train.cpu().numpy())) @ label_onehot[
+                idx_train.to(label_onehot.device)]), K_val_train.cpu() @ (
+                                     torch.tensor(np.linalg.pinv(K_train_train.cpu().numpy())) @ label_onehot.cpu()[
+                                 idx_train.to(label_onehot.device)])
 
+            labels_sample = labels_sample.to(Kreg_G.device) 
+            idx_val = idx_val.to(Kreg_G.device)
             diff_results[j] = (torch.mean(Kreg_G.argmax(1).eq(labels_sample[idx_val]).float()) > torch.mean(
                 Kreg_X.argmax(1).eq(labels_sample[idx_val]).float()))
             G_results[j] = torch.mean(Kreg_G.argmax(1).eq(labels_sample[idx_val]).float())
